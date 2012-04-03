@@ -1,0 +1,158 @@
+﻿board:
+11行11列交错
+每一块tile为正六边形，显示为不相交的圆形斑点
+
+编号方案1：11x11，针对奇偶行使用不同的offset
+ 若偶数行(0,2,4,6,8,10)
+  与(i,j)相邻的tile为：(i-1,j),(i,j+1),(i+1,j),(i+1,j-1),(i,j-1),(i-1,j-1)
+ 若奇数行(1,3,5,7,9)
+  与(i,j)相邻的tile为：(i-1,j+1),(i,j+1),(i+1,j+1),(i+1,j),(i,j-1),(i-1,j)
+
+编号方案2：11x22，统一offset
+ 行距1，列距2
+ 与(i,j)相邻的tile为：(i-1,j+1),(i,j+2),(i+1,j+1),(i+1,j-1),(i,j-2),(i-1,j-1)
+
+
+algorithm:
+开局随机布局，4~12个已toggle的tile，猫位于(6,6)
+
+
+猫位于边缘点，必输
+猫位于边缘第二层，且有两个或更多的边缘点，必输
+（左上、左下3；右上、右下4；上下2；左奇数行1，偶数行3；右奇数行3，偶数行1）
+
+#81:    push "dat_exist"(19) false
+96 04 00 08 13 05 00
+
+
+
+Frame 0-9 Null
+Frame 10 关键帧
+ Sprite 33
+  Frame 0-37
+   Shape 8
+   Sprite 11
+    Frame 0 { visible = false }
+     Static text 10 mcCellLayer
+      Font 9
+    Frame 1 Null { stop(); visible = true }
+   Sprite 32
+    Frame 0 ?
+     Sprite 18
+    Frame 1,2 右(sit,run)
+     Sprite 25 镜像
+    Frame 3,4 右下
+     Sprite 18 镜像
+    Frame 5,6 左下
+     Sprite 18
+    Frame 7,8 左
+     Sprite 25
+    Frame 9,10 左上
+     Sprite 31
+    Frame 11,12 右上
+     Sprite 31 镜像
+ Button 37
+  Static text 35 "Reset"
+   Font 34
+  Shape 36
+ Button 40
+  Static text 38 "Gamedesign"
+   Font 34
+  Shape 39
+ Sprite 49 TopScore Congratulation
+  Frame 0
+   Shape 41
+  Frame 1-18
+   Shape 41
+   Sprite 48 
+    Frame 0 { visible = false; ... }
+    Frame 1-9
+     Button 43
+      Shape 42
+    Frame 10 { stop() }
+     Button 43
+     Shape 45
+      Image 44
+     Static text 47 "CONGRATULATIONS!"
+      Font 46
+Frame 11-17 普通帧，用途不明
+
+Sprite 7
+ Frame 0
+  Dynamic text 2
+   Font 1
+ Frame 1,2
+  Shape 3
+  Dynamic text 2
+ Frame 3
+  Shape 4
+  Dynamic text 2
+ Frame 4-6 Null
+ Frame 7-16
+  Shape 5
+ Frame 17
+  Shape 6
+
+Sprite 18
+ Frame 0 { stop() }
+  Shape 12 left_down_body
+  Shape 13 left_down_head
+ Frame 1
+  Shape 14 left_down_body_1
+  Shape 13
+ Frame 2
+  Shape 15 left_down_body_2
+  Shape 13
+ Frame 3,4
+  Shape 16 left_down_body_3
+  Shape 13
+ Frame 5,6
+  Shape 17 left_down_body_4
+  Shape 13
+ Frame 7 Null { dispatch(act) -> [cat_postion, cat_move] }
+
+Sprite 25
+ Frame 0 { stop() }
+  Shape 19 left_body
+  Shape 20 left_head
+ Frame 1
+  Shape 21 left_body_1
+  Shape 20
+ Frame 2
+  Shape 22 left_body_2
+  Shape 20
+ Frame 3,4
+  Shape 23 left_body_3
+  Shape 20
+ Frame 5,6
+  Shape 24 left_body_4
+  Shape 20
+ Frame 7 Null { dispatch(act) -> [cat_postion, cat_move] }
+
+Sprite 31
+ Frame 0 { stop() }
+  Shape 26 left_up_body
+  Shape 20 left_up_head
+ Frame 1
+  Shape 27 left_up_body_1
+  Shape 20
+ Frame 2
+  Shape 28 left_up_body_2
+  Shape 20
+ Frame 3,4
+  Shape 29 left_up_body_3
+  Shape 20
+ Frame 5,6
+  Shape 30 left_up_body_4
+  Shape 20
+ Frame 7 Null { dispatch(act) -> [cat_postion, cat_move] }
+
+act
+ 0: init
+ 1: move
+
+cat_position()
+ 初始化mcCat的坐标
+
+cat_move()
+ 动画结束后调整mcCat的坐标

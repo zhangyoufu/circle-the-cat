@@ -1,0 +1,46 @@
+# OS generated files
+Thumbs.db
+
+# Temporary files
+~*
+
+# VC auto-generated files
+*.dsw
+*.ncb
+*.opt
+*.plg
+*.ilk
+*.exp
+*.lastbuildstate
+*.log
+*.pch
+*.idb
+*.pdb
+*.map
+*.tlog
+*.manifest
+*.sdf
+*.suo
+*.user
+*.filters
+
+# Build files
+*.o
+*.d
+*.obj
+*.res
+*.exe
+
+# Manual backup files
+*.bak
+
+# Archives
+*.zip
+*.rar
+
+# SDL redirected output
+stdout.txt
+stderr.txt
+
+# External documents
+/SDL-document/

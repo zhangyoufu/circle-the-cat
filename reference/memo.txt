@@ -1,0 +1,81 @@
+﻿浅绿：#CEFF00
+深绿：#738600
+
+130-90=40
+266-221=45
+
+521-480=41
+370-323=47
+
+318-272=46
+
+global variables
+ - time_elapsed
+ - step_count
+
+framework
+ - main()
+
+hiscore
+ - main_loop()
+
+game
+ - main_loop()
+   - get_player_selection( *x, *y )
+
+render
+ - cell[11][11]: 0 -> light color, 1 -> dark color
+ - put_barrier( x, y )
+ - cat_put( x, y, dir )
+ - cat: { x, y, dir }
+ - cat_move( dir )
+ - fade_in()
+ - fade_out()
+
+init
+ - init()
+    - generate()
+
+cat
+ - calc_next_step() -> dir (0:blocked, 1-6:clockwise)
+
+
+猫
+中心(677,446)
+放大160%
+宽度：172px
+高度：149px
+
+(591,351) - (762,499)
+172x149
+
+(684,440) - (731,483)
+48x44
+
+Note: Note that RGBA->RGBA blits (with SDL_SRCALPHA set) keep the alpha of the destination surface. This means that you cannot compose two arbitrary RGBA surfaces this way and get the result you would expect from "overlaying" them; the destination alpha will work as a mask.
+
+
+触击区域判定：
+方法一：行列估算(最多4种可能)，枚举圆形(确定)
+方法二：准备好二维数组，对应像素
+  优化：准备好小范围二维数组，对应像素(Wrap)，再检查cell
+        TILE_X_DELTA * TILE_Y_DELTA
+
+X+1, Y+2
+
+x / TILE_X_DELTA * 2 + offset_x
+y / TILE_Y_DELTA * 2 + offset_y
+
+(-1,-1)  (0,-1)
+
+     (0,0)
+
+(-1,1)   (0,1)
+
+方法三：上下左右延伸，计算出圆心位置
+
+O0: 171KB 175,102 字节
+O1: 171KB 174,454 字节
+O2: 171KB 174,454 字节
+O3: 174KB 177,970 字节
+Os: 171KB 174,454 字节
