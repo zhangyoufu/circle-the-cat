@@ -56,7 +56,6 @@ LINK32=link.exe
 # ADD LINK32 winmm.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /machine:I386
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy    Release\SDL.lib   ..\..\..\lib\Release\   	copy    Release\SDL.dll   ..\..\..\lib\Release\  	copy    Release\SDL.dll   ..\..\..\..\ 
 # End Special Build Tool
 
 !ELSEIF  "$(CFG)" == "SDL - Win32 Debug"
@@ -86,7 +85,6 @@ LINK32=link.exe
 # ADD LINK32 winmm.lib dxguid.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib /nologo /subsystem:windows /dll /debug /machine:I386 /pdbtype:sept
 # Begin Special Build Tool
 SOURCE="$(InputPath)"
-PostBuild_Cmds=copy    Debug\SDL.lib    ..\..\..\lib\Debug\   	copy    Debug\SDL.dll    ..\..\..\lib\Debug\ 
 # End Special Build Tool
 
 !ENDIF 

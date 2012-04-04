@@ -23,6 +23,7 @@ Thumbs.db
 *.suo
 *.user
 *.filters
+*.opensdf
 
 # Build files
 *.o
@@ -30,6 +31,10 @@ Thumbs.db
 *.obj
 *.res
 *.exe
+*.dll
+*.lib
+Debug/
+Release/
 
 # Manual backup files
 *.bak
