@@ -46,6 +46,3 @@ Release/
 # SDL redirected output
 stdout.txt
 stderr.txt
-
-# External documents
-/SDL-document/
