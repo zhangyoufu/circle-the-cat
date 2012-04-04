@@ -4,26 +4,49 @@
 all :
 
 # Compile Switch
-DEBUG = FALSE
+DEBUG = TRUE
 PROFILE = FALSE
 STATIC = FALSE
+
+# Files
+MODULE = $(patsubst src/%.c,%,$(wildcard src/*.c))
+OBJ = $(MODULE:%=obj/%.o)
+DEP = $(MODULE:%=dep/%.d)
+
+# Command Goal Check #1 (Affect Compile Switch)
+ifeq ($(MAKECMDGOALS),release)
+DEBUG = FALSE
+STATIC = TRUE
+endif
 
 # Project Specific
 EXE = chatnoir
 LIB = SDL_Image png z
 CFLAGS += $(shell sdl-config --cflags)
-#ifeq ($(DEBUG),TRUE)
+ifeq ($(DEBUG),TRUE)
 LDFLAGS += -mconsole
-#endif
+endif
 ifeq ($(STATIC),TRUE)
 LDFLAGS += -static $(shell sdl-config --static-libs)
 else
 LDFLAGS += $(shell sdl-config --libs)
 endif
-MODULE = $(patsubst src/%.c,%,$(wildcard src/*.c))
 INCLUDE_PATH += 
 LIBRARY_PATH += 
 export SDL_STDIO_REDIRECT = 0
+
+# Command Goal Check #2 (Exclusive/Validity Check)
+PHONY_GOAL = all clean release
+
+ifneq ($(filter $(PHONY_GOAL),$(MAKECMDGOALS)),)
+ifneq ($(words $(MAKECMDGOALS)),1)
+$(error '$(MAKECMDGOALS)' target should be used standalone)
+endif
+endif
+
+ifneq ($(filter-out $(PHONY_GOAL) $(EXE) $(MODULE),$(MAKECMDGOALS)),)
+$(error Unknown goal specified)
+endif
 
 # Platform/Architecture Specific
 ifeq ($(OS), Windows_NT)
@@ -48,24 +71,8 @@ endif
 CFLAGS += $(INCLUDE_PATH:%=-I%)
 LDFLAGS += $(LIBRARY_PATH:%=-L%)
 
-# Command Goal Check
-ifneq ($(filter all clean,$(MAKECMDGOALS)),)
-ifneq ($(words $(MAKECMDGOALS)),1)
-$(error '$(MAKECMDGOALS)' target should be used standalone)
-endif
-endif
-
-ifneq ($(filter-out all clean $(EXE) $(MODULE),$(MAKECMDGOALS)),)
-$(error Unknown goal specified)
-endif
-
-# Build Files
-OBJ = $(MODULE:%=obj/%.o)
-DEP = $(MODULE:%=dep/%.d)
-
 # Dependency
-ifneq ($(filter all $(EXE),$(MAKECMDGOALS)),)
-$(warning DEP_POLICY=ALL)
+ifneq ($(filter $(filter-out $(PHONY_GOAL),clean) $(EXE),$(MAKECMDGOALS)),)
 DEP_POLICY = ALL
 endif
 
@@ -99,13 +106,16 @@ BUILD_DIR = obj dep
 $(foreach dir,$(BUILD_DIR),$(eval $(dir) : ; @mkdir $$@))
 
 # Special Goal
-.PNONY : all clean $(EXE) $(MODULE)
+.PNONY : $(PHONY_GOAL) $(EXE) $(MODULE)
 
 all : $(EXE)
 
 clean :
 	@echo [CLEAN]
 	@rm -rf $(EXE_FILE) $(BUILD_DIR)
+
+release : clean $(EXE_FILE)
+	@upx -9 $(EXE_FILE)
 
 # Top Level Goal
 ifneq ($(EXE_EXTENSION),)
@@ -123,16 +133,16 @@ $(foreach module,$(UPDATED_MODULE),$(eval $(module) : ; @true ))
 endif
 
 # Module Pattern Rule
-obj/%.o : src/%.c | $(BUILD_DIR)
-	@echo [obj rule] [GCC] $(@:obj/%.o=%)
+obj/%.o : src/%.c Makefile | $(BUILD_DIR)
+	@echo [GCC] $(@:obj/%.o=%)
 	@$(CC) -c $(CFLAGS) -MP -MMD \
 		-MF $(@:obj/%.o=dep/%.d) \
 		-MT "$@ $(@:obj/%.o=dep/%.d)" \
 		-o $@ \
 		$<
 
-dep/%.d : src/%.c | $(BUILD_DIR)
-	@echo [dep rule] [CC] $(@:dep/%.d=%)
+dep/%.d : src/%.c Makefile | $(BUILD_DIR)
+	@echo [CC] $(@:dep/%.d=%)
 	@$(CC) -c $(CFLAGS) -MP -MMD \
 		-MF $@ \
 		-MT "$(@:dep/%.d=obj/%.o) $@" \
