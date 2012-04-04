@@ -9,9 +9,9 @@ PROFILE = FALSE
 STATIC = FALSE
 
 # Files
-MODULE = $(patsubst src/%.c,%,$(wildcard src/*.c))
-OBJ = $(MODULE:%=obj/%.o)
-DEP = $(MODULE:%=dep/%.d)
+MODULE = $(patsubst source/%.c,%,$(wildcard source/*.c))
+OBJ = $(MODULE:%=.obj/%.o)
+DEP = $(MODULE:%=.dep/%.d)
 
 # Command Goal Check #1 (Affect Compile Switch)
 ifeq ($(MAKECMDGOALS),release)
@@ -86,7 +86,7 @@ DEP_POLICY = SPECIFIC
 endif
 endif
 
-DEP_EXIST = $(filter $(DEP),$(wildcard dep/*.d))
+DEP_EXIST = $(filter $(DEP),$(wildcard .dep/*.d))
 
 ifeq ($(DEP_POLICY),ALL)
 #$(warning Dependency: $(DEP_EXIST))
@@ -95,14 +95,14 @@ endif
 
 ifeq ($(DEP_POLICY),SPECIFIC)
 # module goals specified
-SPECIFIC_DEP = $(filter $(MAKECMDGOALS:%=dep/%.d),$(DEP_EXIST))
+SPECIFIC_DEP = $(filter $(MAKECMDGOALS:%=.dep/%.d),$(DEP_EXIST))
 #$(warning Dependency: $(SPECIFIC_DEP))
-export UPDATED_MODULE=$(SPECIFIC_DEP:dep/%.d=%)
+export UPDATED_MODULE=$(SPECIFIC_DEP:.dep/%.d=%)
 include $(SPECIFIC_DEP)
 endif
 
 # Build Directory Goal
-BUILD_DIR = obj dep
+BUILD_DIR = .obj .dep
 $(foreach dir,$(BUILD_DIR),$(eval $(dir) : ; @mkdir $$@))
 
 # Special Goal
@@ -115,7 +115,7 @@ clean :
 	@rm -rf $(EXE_FILE) $(BUILD_DIR)
 
 release : clean $(EXE_FILE)
-	@upx -9 $(EXE_FILE)
+	@-upx -9 $(EXE_FILE)
 
 # Top Level Goal
 ifneq ($(EXE_EXTENSION),)
@@ -127,24 +127,24 @@ $(EXE_FILE) : $(OBJ)
 	@$(LD) -o $(EXE)$(EXE_SUFFIX) $(OBJ) $(LDFLAGS) $(LIB:%=-l%)
 
 # Module Pseudo Goal
-$(foreach module,$(MODULE),$(eval $(module) : obj/$(module).o dep/$(module).d))
+$(foreach module,$(MODULE),$(eval $(module) : .obj/$(module).o .dep/$(module).d))
 ifdef MAKE_RESTARTS
 $(foreach module,$(UPDATED_MODULE),$(eval $(module) : ; @true ))
 endif
 
 # Module Pattern Rule
-obj/%.o : src/%.c Makefile | $(BUILD_DIR)
-	@echo [GCC] $(@:obj/%.o=%)
+.obj/%.o : source/%.c Makefile | $(BUILD_DIR)
+	@echo [GCC] $(@:.obj/%.o=%)
 	@$(CC) -c $(CFLAGS) -MP -MMD \
-		-MF $(@:obj/%.o=dep/%.d) \
-		-MT "$@ $(@:obj/%.o=dep/%.d)" \
+		-MF $(@:.obj/%.o=.dep/%.d) \
+		-MT "$@ $(@:.obj/%.o=.dep/%.d)" \
 		-o $@ \
 		$<
 
-dep/%.d : src/%.c Makefile | $(BUILD_DIR)
-	@echo [CC] $(@:dep/%.d=%)
+.dep/%.d : source/%.c Makefile | $(BUILD_DIR)
+	@echo [CC] $(@:.dep/%.d=%)
 	@$(CC) -c $(CFLAGS) -MP -MMD \
 		-MF $@ \
-		-MT "$(@:dep/%.d=obj/%.o) $@" \
-		-o $(@:dep/%.d=obj/%.o) \
+		-MT "$(@:.dep/%.d=.obj/%.o) $@" \
+		-o $(@:.dep/%.d=.obj/%.o) \
 		$<

@@ -92,43 +92,43 @@ LINK32=link.exe
 # PROP Default_Filter "cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\board.c"
+SOURCE=..\source\board.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\cat.c"
+SOURCE=..\source\cat.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\computer.c"
+SOURCE=..\source\computer.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\cursor.c"
+SOURCE=..\source\cursor.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\effect.c"
+SOURCE=..\source\effect.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\game.c"
+SOURCE=..\source\game.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\main.c"
+SOURCE=..\source\main.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\topscore.c"
+SOURCE=..\source\topscore.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\utils.c"
+SOURCE=..\source\utils.c
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\view.c"
+SOURCE=..\source\view.c
 # End Source File
 # End Group
 # Begin Group "Header Files"
@@ -136,19 +136,19 @@ SOURCE="..\..\..\Projects\circle-the-cat\src\view.c"
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\board.h"
+SOURCE=..\source\board.h
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\global.h"
+SOURCE=..\source\global.h
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\stdbool.h"
+SOURCE=..\source\stdbool.h
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\..\Projects\circle-the-cat\src\stdint.h"
+SOURCE=..\source\stdint.h
 # End Source File
 # End Group
 # Begin Group "Resource Files"
