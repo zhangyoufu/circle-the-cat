@@ -91,7 +91,7 @@ static int col_delta[2][DIRECTION_MAX] = {
 /* Calculate cell position in the direction specified, then write back */
 bool calc_cell_move( int *row, int *col, Direction dir )
 {
-	int index = cat.row % 2;
+	int index = *row % 2;
 	int new_row = *row + row_delta[index][dir];
 	int new_col = *col + col_delta[index][dir];
 	
