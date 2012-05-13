@@ -11,6 +11,8 @@ static SDL_Surface *scoreboard;
 static SDL_Event event;
 static FILE *fp;
 
+static SDL_Rect board_base = { SCOREBOARD_X_BASE, SCOREBOARD_Y_BASE, 0, 0 };
+
 void putstring( char str[], int xx, int yy , int len )
 {
 	/*str as string and x,y as location and len as length*/
@@ -158,6 +160,7 @@ static void score_load( void )
         if ( scorestr[1] == '0' ) scorestr[1] = '\0';
         scorestr[2] = '0' + score[i] % 10;
         //putstring( scorestr, x3, y[i], 3 );//score output
+        //draw_scoreboard( SDL_Surface *surface );
 	}
 }
 
@@ -166,9 +169,15 @@ static void namein( void )
 
 }
 
+static void draw_scoreboard( SDL_Surface *surface )
+{
+	SDL_BlitSurface( scoreboard, NULL, surface, &board_base );
+	if( surface == screen )
+		SDL_Flip( screen );
+}
+
 static void load( void )
 {
-
 	score_load( );
 }
 
@@ -185,15 +194,12 @@ static void scoreboard_initialize( void )
 	inputbox_init( );
 }
 
-static SDL_Rect board_base = { SCOREBOARD_X_BASE, SCOREBOARD_Y_BASE, 0, 0 };
-
 static void initialize( SDL_Surface *surface )
 {
 	Uint32 bgcolor = SDL_MapRGB( surface->format, 0xff, 0xff, 0xff );
 	SDL_FillRect( surface, NULL, bgcolor );
 	scoreboard_initialize( );
-	SDL_BlitSurface( scoreboard, NULL, surface, &board_base );
-	SDL_Flip( surface );
+	draw_scoreboard( surface );
 }
 
 static void finalize( void )
@@ -213,25 +219,27 @@ static ViewDescriptor main_loop( void )
 	bool quit = false;
 	len = 0;
 
-	
+	/*deal with keyboard and mouse*/
 	SDL_EnableUNICODE( SDL_ENABLE );
-	while( !entered )
+	while( !quit )
 	{
 		while( SDL_PollEvent( &event ) )
 	    {
-			if( event.type == SDL_KEYDOWN )
+			if( ( event.type == SDL_KEYDOWN ) && ( !entered ) )
 	        {
                 if( event.key.keysym.sym == SDLK_RETURN )
                 {
-            	    inputbox_init( );
             	    entered = true;
+            	    quit = true;
                 }    
                 else if( ( event.key.keysym.sym == SDLK_BACKSPACE ) && ( len != 0 ) )
-                    len--;
+                {
+					len--;
+                }
                 else if( len < 15 )
                 {
                 	code = event.key.keysym.unicode;
-                	if( ( code >= 0 ) && ( code <= 127 ) )
+                	if( ( code >= 33 ) && ( code <= 127 ) )
                 	{
 	                	chin = (char) code;
     	                strin[len] = chin;
@@ -240,7 +248,7 @@ static ViewDescriptor main_loop( void )
                 }
                 strin[len] = '\0';
                 inputbox_init( );
-                putstring( strin, 54, 364, len ); 
+                if ( !entered ) putstring( strin, 54, 364, len ); 
     	    }
         	if( event.type == SDL_MOUSEMOTION )
 	    	{
@@ -262,12 +270,15 @@ static ViewDescriptor main_loop( void )
             if( event.type == SDL_MOUSEBUTTONUP )
 			{
 			    button_load( 0 );
-			    if ( entered ) inputbox_init( );
+			    if ( entered )
+				{
+				    inputbox_init( );
+				    quit = true;
+				}
 			}
+			draw_scoreboard( screen );
     	}
 	}
-
-	delay( 1000 );
     SDL_EnableUNICODE( SDL_DISABLE );
 	delay(5000);//waiting
 	return VIEW_DESCRIPTOR( GAME_VIEW, NO_EFFECT );
