@@ -13,6 +13,11 @@ static FILE *fp;
 
 static SDL_Rect board_base = { SCOREBOARD_X_BASE, SCOREBOARD_Y_BASE, 0, 0 };
 
+int tempscore;
+int rank;
+int score[10];
+char name[10][16];
+
 void putstring( char str[], int xx, int yy , int len )
 {
 	/*str as string and x,y as location and len as length*/
@@ -45,22 +50,23 @@ void putstring( char str[], int xx, int yy , int len )
 static void create_savedata( void )
 {
 	int i, j;
-	char name[10][16] = { "kuroneko\0       ",
-                          "Albert\0         ",
-                          "MYM\0            ",
-                          "WORLDELITE\0     ",
-                          "wwwwwwwwwwwwwww\0",
-                          "Zhang Youfu\0    ",
-                          "asdfghjkl\0      ",
-                          "1+1\0            ",
-                          "Q && M\0         ",
-                          "DotA\0           " };
-    int score[10] = { 80, 77, 75, 70, 66, 60, 55, 44, 30, 0 };
+	char newname[10][17] = { "kuroneko\0       ",
+                             "Albert\0         ",
+                             "MYM\0            ",
+                             "WORLDELITE\0     ",
+                             "wwwwwwwwwwwwwww\0",
+                             "Zhang Youfu\0    ",
+                             "asdfghjkl\0      ",
+                             "1+1\0            ",
+                             "Q && M\0         ",
+                             "DotA\0           " };
+    int newscore[10] = { 80, 77, 75, 70, 66, 60, 55, 44, 30, 0 };
 	fp = fopen( "savedata.sav", "wb+" );
-	for( i = 0; i < 10; i++ ){
+	for( i = 0; i < 10; i++ )
+	{
 		for( j = 0; j < 16; j++ )
-		    putc( name[i][j], fp );
-        fprintf( fp, "%d\n", score[i] );
+		    putc( newname[i][j], fp );
+        fprintf( fp, "%d\n", newscore[i] );
 	}
 	fclose( fp );
 }
@@ -76,15 +82,30 @@ static void open_savedata( void )
 
 bool is_top_score( void )
 {
-
+    int i,j;
+    bool result = false;
 	
 	open_savedata( );
 
     /* judge if is topscore */
-    
-    fclose( fp );
-	
-	return true;
+    tempscore = 76;//calculate the score
+    for( i = 0; i < 10; i++ )
+    {
+    	for( j = 0; j < 16; j++ )
+		    name[i][j] = fgetc( fp );
+	    fscanf( fp, "%d\n", &score[i] );
+    }
+    for( i = 0; i < 10; i++ )
+    {
+    	if ( score[i] < tempscore )
+    	{
+	    	rank = i;
+	    	result = true;
+	    	break;
+	    }
+    }
+    fclose( fp );	
+	return result;
 }
 
 static void scorewall_load( void )
@@ -96,18 +117,12 @@ static void scorewall_load( void )
 			         scoreboard,
 			         NULL );
 	SDL_FreeSurface( scorewall );
-    //SDL_Flip( scoreboard );
 }
 
 static void button_load( int state )
 {
 	SDL_Rect position = { 100, 420, 0, 0 };
 	SDL_Surface* button;
-    /*switch( state );
-	{
-	    case 0: button = load_resource_for_RGBA( "button0.png" ); break;
-	    case 1: button = load_resource_for_RGBA( "button1.png" ); break;
-	}*/
 	if ( state == 0 ) button = load_resource_for_RGBA( "button0.png" );
 	if ( state == 1 ) button = load_resource_for_RGBA( "button1.png" );
 	SDL_BlitSurface( button,
@@ -115,7 +130,6 @@ static void button_load( int state )
 			         scoreboard,
 			         &position );
     SDL_FreeSurface( button );
-	//SDL_Flip( scoreboard );
 }
 
 static void inputbox_init( void )
@@ -128,45 +142,61 @@ static void inputbox_init( void )
 			         scoreboard,
 			         &position );
     SDL_FreeSurface( inputbox );
-    //SDL_Flip( scoreboard );
 }
 
 static void score_load( void )
 {
-	int i, j;
-	int score[10];
-	char name[10][16];
+	int i;
 	char num[2], scorestr[3];
-	
-	open_savedata( );
+	/*tempscore output*/
+	scorestr[0] = '0' + tempscore / 100;
+    if ( scorestr[0] == '0' ) scorestr[0] = '\0';
+    scorestr[1] = '0' + ( tempscore / 10 ) % 10;
+    if ( scorestr[1] == '0' ) scorestr[1] = '\0';
+    scorestr[2] = '0' + tempscore % 10;
+    putstring( scorestr, 132, 60, 3 );
 	/*hiscore output*/
 	for( i = 0; i < 10; i++ ){
 		num[1] = '1' + i;
 		if ( num[1] > '9' ){
-			num[1] = num[i] - 10;
+			num[1] = num[1] - 10;
 			num[0] = '1';
 		} 
 		else num[0] = '0';
-		//putstring( num, x1, y[i], 2 );//rank output
-		
-		for( j = 0; j < 16; j++ )
-		    name[i][j] = fgetc( fp );
-        //putstring( name[i], x2, y[i], 16 );//name output
-        
-        fscanf( fp, "%d", &score[i] );
+		putstring( num, 10, 90 + 24 * i, 2 );//rank output		
+        putstring( name[i], 55, 90 + 24 * i, 16 );//name output        
         scorestr[0] = '0' + score[i] / 100;
         if ( scorestr[0] == '0' ) scorestr[0] = '\0';
         scorestr[1] = '0' + (score[i] / 10) % 10;
         if ( scorestr[1] == '0' ) scorestr[1] = '\0';
         scorestr[2] = '0' + score[i] % 10;
-        //putstring( scorestr, x3, y[i], 3 );//score output
-        //draw_scoreboard( SDL_Surface *surface );
+        putstring( scorestr, 250, 90 + 24 * i, 3 );//score output
+        //draw_scoreboard( screen );
 	}
 }
 
-static void namein( void )
+static void save_topscore( char str[] )
 {
+    int i,j;
 
+    fp = fopen( "savedata.sav", "wb" );
+    i = 0;
+    for( i = 0; i < rank; i++ )
+    {
+		for( j = 0; j < 16; j++ )
+		    fputc( name[i][j], fp );
+        fprintf( fp, "%d\n", score[i] );
+    }
+    for( j = 0; j < 16; j++ )
+        fputc( str[j], fp );
+    fprintf( fp, "%d\n", tempscore );
+    for( i = rank; i < 9; i++ )
+    {
+    	for( j = 0; j < 16; j++ )
+		    fputc( name[i][j], fp );
+        fprintf( fp, "%d\n", score[i] );
+    }
+    fclose( fp );
 }
 
 static void draw_scoreboard( SDL_Surface *surface )
@@ -176,9 +206,20 @@ static void draw_scoreboard( SDL_Surface *surface )
 		SDL_Flip( screen );
 }
 
+/*static Uint32 draw_line(Uint32 interval, void *opaque)
+{
+
+}
+
+static void draw_line( int len, Uint32 timer, Uint32 start )
+{
+	if( ( ( timer - start ) % 600 ) < 300 )
+	    putstring( "|", 54, 364, 1 );
+}*/
+
 static void load( void )
 {
-	score_load( );
+	//score_load( );
 }
 
 static void unload( void )
@@ -190,6 +231,7 @@ static void scoreboard_initialize( void )
 	scoreboard = create_surface( SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, 32, SDL_HWSURFACE );
 	SDL_FillRect( scoreboard, NULL, TRANSPARENT_COLOR );
 	scorewall_load( );
+	score_load( );
 	button_load( 0 );
 	inputbox_init( );
 }
@@ -211,9 +253,10 @@ static ViewDescriptor main_loop( void )
 {
 	char strin[16]; //string input
 	char chin; //char input
-	int len; //string length
-	int code; //key's unicode
-	int cursor_x, cursor_y; //cursor location x,y
+	Uint16 len, alen; //string length
+	Uint16 code; //key's unicode
+	Uint16 cursor_x, cursor_y; //cursor location x,y
+	Uint32 timer, start;
 	bool cursor_over = false; //if cursor is over the button
 	bool entered = false; //if pressed RETURN or click OK
 	bool quit = false;
@@ -221,6 +264,7 @@ static ViewDescriptor main_loop( void )
 
 	/*deal with keyboard and mouse*/
 	SDL_EnableUNICODE( SDL_ENABLE );
+	start = SDL_GetTicks( );
 	while( !quit )
 	{
 		while( SDL_PollEvent( &event ) )
@@ -232,23 +276,21 @@ static ViewDescriptor main_loop( void )
             	    entered = true;
             	    quit = true;
                 }    
-                else if( ( event.key.keysym.sym == SDLK_BACKSPACE ) && ( len != 0 ) )
+                else if( event.key.keysym.sym == SDLK_BACKSPACE )
                 {
-					len--;
+					if ( len != 0 ) len--;
                 }
                 else if( len < 15 )
                 {
                 	code = event.key.keysym.unicode;
-                	if( ( code >= 33 ) && ( code <= 127 ) )
+                	if( ( code >= 32 ) && ( code <= 127 ) )
                 	{
 	                	chin = (char) code;
     	                strin[len] = chin;
         	            len++;
 	                }
                 }
-                strin[len] = '\0';
-                inputbox_init( );
-                if ( !entered ) putstring( strin, 54, 364, len ); 
+                strin[len] = '|';
     	    }
         	if( event.type == SDL_MOUSEMOTION )
 	    	{
@@ -264,7 +306,7 @@ static ViewDescriptor main_loop( void )
     			{
 	    		    button_load( 1 );
 			        entered = true;
-			        inputbox_init( );
+			        //inputbox_init( );
     			}
             }
             if( event.type == SDL_MOUSEBUTTONUP )
@@ -276,11 +318,31 @@ static ViewDescriptor main_loop( void )
 				    quit = true;
 				}
 			}
-			draw_scoreboard( screen );
+			if( event.type == SDL_QUIT )
+			{
+				entered=true;
+				quit = true;
+			}
     	}
+    	inputbox_init( );
+        if ( !entered )
+		{
+			timer = SDL_GetTicks( );
+    		if( ( ( timer - start ) % 600 ) < 300 )
+    	        putstring( strin, 54, 364, len + 1 );
+	        else putstring( strin, 54, 364, len );
+		}
+		else
+		{
+		    strin[len] = '\0';
+			for( alen = len + 1; alen < 16; alen++ )
+			    strin[alen] = ' ';
+		}
+		draw_scoreboard( screen );
 	}
     SDL_EnableUNICODE( SDL_DISABLE );
-	delay(5000);//waiting
+    save_topscore( strin );
+	delay(1000);//waiting
 	return VIEW_DESCRIPTOR( GAME_VIEW, NO_EFFECT );
 }
 
