@@ -60,6 +60,9 @@ static ViewDescriptor main_loop( void )
 {
 	bool game_over = false, cat_win = false;
 	int x, y;
+	int steps = 0;
+	Uint32 starter, timer;
+	bool start = false;
 	
 	if( SDL_GetMouseState( &x, &y ) & SDL_BUTTON_LEFT )
 		set_cursor( CURSOR_NORMAL );
@@ -99,6 +102,15 @@ static ViewDescriptor main_loop( void )
 					if( cell[row][col].type == CELL_GROUND )
 					{
 						int direction;
+						
+						/* Record time and steps for topscore */
+						if( !start )
+						{
+						    starter = SDL_GetTicks( );
+						    start = true;
+						}
+						steps++;
+						timer = SDL_GetTicks( ); //get time
 						
 						/* Set the cell to barrier */
 						cell[row][col].type = CELL_BARRIER;
@@ -142,7 +154,7 @@ static ViewDescriptor main_loop( void )
 		}
 	}
 	
-	if( cat_win && is_top_score() )
+	if( !cat_win && is_top_score( timer - starter, steps ) )
 		return VIEW_DESCRIPTOR( TOP_SCORE_VIEW, FADE_EFFECT );
 	return VIEW_DESCRIPTOR( GAME_VIEW, FADE_EFFECT );
 }

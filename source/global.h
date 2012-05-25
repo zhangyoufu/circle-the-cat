@@ -169,7 +169,7 @@ bool calc_cell_move( int *row, int *col, Direction dir );
 /******************************************************************************/
 
 /* Score */
-bool is_top_score( void );
+bool is_top_score( Uint32 time, int steps );
 
 /******************************************************************************/
 

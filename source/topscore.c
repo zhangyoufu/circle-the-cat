@@ -1,4 +1,5 @@
 #include "global.h"
+#include <math.h>
 
 #define SCOREBOARD_WIDTH     300
 #define SCOREBOARD_HEIGHT    500
@@ -13,29 +14,28 @@ static FILE *fp;
 
 static SDL_Rect board_base = { SCOREBOARD_X_BASE, SCOREBOARD_Y_BASE, 0, 0 };
 
-int tempscore;
-int rank;
-int score[10];
-char name[10][16];
+static int tempscore;
+static int rank, stepuse, timeuse;
+//static Uint32 timeuse;
+static int score[10];
+static char name[10][16];
 
-void putstring( char str[], int xx, int yy , int len )
+static void putstring( char str[], int xx, int yy , int len )
 {
 	/*str as string and x,y as location and len as length*/
-	int i, out_x; //letter_x, letter_y;
+	int i, out_x;
 	SDL_Surface *letters;
 	SDL_Rect position;
 	SDL_Rect letter;
 	
 	out_x = xx;	
-	letters = load_resource_for_RGBA( "letters.png" );
+	letters = load_resource_for_RGBA( "letters.gif" );
 	for ( i = 0 ; i < len ; i++ )
 	{
         letter.x = ( ( (Uint16) str[i] ) % 8 ) * LETTER_WIDTH;
 	    letter.y = ( ( (Uint16) str[i] ) / 8 ) * LETTER_HEIGHT;
 	    letter.w = LETTER_WIDTH;
 	    letter.h = LETTER_HEIGHT;
-	    //letter = { letter_x, letter_y, LETTER_WIDTH, LETTER_HEIGHT };
-		//position = { out_x, yy, 0, 0 };
 		position.x = out_x;
 		position.y = yy;
 		SDL_BlitSurface( letters,
@@ -44,7 +44,7 @@ void putstring( char str[], int xx, int yy , int len )
 			             &position );
         out_x += LETTER_WIDTH;
 	}
-	SDL_Flip( scoreboard );
+	SDL_FreeSurface( letters );
 }
 
 static void create_savedata( void )
@@ -80,15 +80,16 @@ static void open_savedata( void )
 	}
 }
 
-bool is_top_score( void )
+bool is_top_score( Uint32 time, int steps )
 {
     int i,j;
     bool result = false;
 	
 	open_savedata( );
-
+    stepuse = steps;
+    timeuse = time / 1000;
     /* judge if is topscore */
-    tempscore = 76;//calculate the score
+    tempscore = 120 - (int)( stepuse / 5.0 + 5 * log( timeuse ) + 2 * pow( 1.5, timeuse / 10 ) );//calculate the score
     for( i = 0; i < 10; i++ )
     {
     	for( j = 0; j < 16; j++ )
@@ -111,7 +112,7 @@ bool is_top_score( void )
 static void scorewall_load( void )
 {
     SDL_Surface* scorewall;
-	scorewall = load_resource_for_RGBA( "scorewall.png" );
+	scorewall = load_resource_for_RGBA( "scorewall.gif" );
 	SDL_BlitSurface( scorewall,
 			         NULL,
 			         scoreboard,
@@ -123,8 +124,8 @@ static void button_load( int state )
 {
 	SDL_Rect position = { 100, 420, 0, 0 };
 	SDL_Surface* button;
-	if ( state == 0 ) button = load_resource_for_RGBA( "button0.png" );
-	if ( state == 1 ) button = load_resource_for_RGBA( "button1.png" );
+	if ( state == 0 ) button = load_resource_for_RGBA( "button0.gif" );
+	if ( state == 1 ) button = load_resource_for_RGBA( "button1.gif" );
 	SDL_BlitSurface( button,
 			         NULL,
 			         scoreboard,
@@ -148,13 +149,6 @@ static void score_load( void )
 {
 	int i;
 	char num[2], scorestr[3];
-	/*tempscore output*/
-	scorestr[0] = '0' + tempscore / 100;
-    if ( scorestr[0] == '0' ) scorestr[0] = '\0';
-    scorestr[1] = '0' + ( tempscore / 10 ) % 10;
-    if ( scorestr[1] == '0' ) scorestr[1] = '\0';
-    scorestr[2] = '0' + tempscore % 10;
-    putstring( scorestr, 132, 60, 3 );
 	/*hiscore output*/
 	for( i = 0; i < 10; i++ ){
 		num[1] = '1' + i;
@@ -168,11 +162,51 @@ static void score_load( void )
         scorestr[0] = '0' + score[i] / 100;
         if ( scorestr[0] == '0' ) scorestr[0] = '\0';
         scorestr[1] = '0' + (score[i] / 10) % 10;
-        if ( scorestr[1] == '0' ) scorestr[1] = '\0';
+        if ( ( scorestr[1] == '0' ) && ( scorestr[0] == '\0' ) ) scorestr[1] = '\0';
         scorestr[2] = '0' + score[i] % 10;
         putstring( scorestr, 250, 90 + 24 * i, 3 );//score output
-        //draw_scoreboard( screen );
 	}
+}
+
+static void tempscore_load( void )
+{
+	char stri[32], strj[32];
+	int i, j, tscore;
+	const int loc_y = 60;
+	tscore = tempscore;
+	/*tempscore output*/
+	i = 0;
+	while( tscore > 0 )
+	{
+		stri[i] = '0' + tscore % 10;
+		tscore = tscore / 10;
+		i++;
+	}
+	for( j = 0; j < i; j++ )
+		strj[j] = stri[i-1-j];
+	putstring( strj, 246, loc_y, i );
+	/*steps output*/
+	i = 0;
+	while( stepuse > 0 )
+	{
+		stri[i] = '0' + stepuse % 10;
+		stepuse = stepuse / 10;
+		i++;
+	}
+	for( j = 0; j < i; j++ )
+		strj[j] = stri[i-1-j];
+	putstring( strj, 162, loc_y, i );
+	/*time output*/
+	i = 0;
+	while( timeuse > 0 )
+	{
+		stri[i] = '0' + timeuse % 10;
+		timeuse = timeuse / 10;
+		i++;
+	}
+	for( j = 0; j < i; j++ )
+		strj[j] = stri[i-1-j];
+	putstring( strj, 78, loc_y, i );
 }
 
 static void save_topscore( char str[] )
@@ -206,20 +240,8 @@ static void draw_scoreboard( SDL_Surface *surface )
 		SDL_Flip( screen );
 }
 
-/*static Uint32 draw_line(Uint32 interval, void *opaque)
-{
-
-}
-
-static void draw_line( int len, Uint32 timer, Uint32 start )
-{
-	if( ( ( timer - start ) % 600 ) < 300 )
-	    putstring( "|", 54, 364, 1 );
-}*/
-
 static void load( void )
 {
-	//score_load( );
 }
 
 static void unload( void )
@@ -228,11 +250,9 @@ static void unload( void )
 
 static void scoreboard_initialize( void )
 {
-	scoreboard = create_surface( SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, 32, SDL_HWSURFACE );
-	SDL_FillRect( scoreboard, NULL, TRANSPARENT_COLOR );
 	scorewall_load( );
 	score_load( );
-	button_load( 0 );
+	tempscore_load( );
 	inputbox_init( );
 }
 
@@ -240,7 +260,10 @@ static void initialize( SDL_Surface *surface )
 {
 	Uint32 bgcolor = SDL_MapRGB( surface->format, 0xff, 0xff, 0xff );
 	SDL_FillRect( surface, NULL, bgcolor );
+	scoreboard = create_surface( SCOREBOARD_WIDTH, SCOREBOARD_HEIGHT, 32, SDL_HWSURFACE );
+	SDL_FillRect( scoreboard, NULL, TRANSPARENT_COLOR );
 	scoreboard_initialize( );
+	button_load( 0 );
 	draw_scoreboard( surface );
 }
 
@@ -256,22 +279,24 @@ static ViewDescriptor main_loop( void )
 	Uint16 len, alen; //string length
 	Uint16 code; //key's unicode
 	Uint16 cursor_x, cursor_y; //cursor location x,y
-	Uint32 timer, start;
 	bool cursor_over = false; //if cursor is over the button
 	bool entered = false; //if pressed RETURN or click OK
 	bool quit = false;
 	len = 0;
-
 	/*deal with keyboard and mouse*/
 	SDL_EnableUNICODE( SDL_ENABLE );
-	start = SDL_GetTicks( );
+	set_cursor( CURSOR_NORMAL );
+    putstring( "_", 54, 364, 1 );
+    draw_scoreboard( screen );
 	while( !quit )
 	{
-		while( SDL_PollEvent( &event ) )
+		get_input_event( &event );
+		switch( event.type )
 	    {
-			if( ( event.type == SDL_KEYDOWN ) && ( !entered ) )
+			case SDL_KEYDOWN:
 	        {
-                if( event.key.keysym.sym == SDLK_RETURN )
+                if( entered ) break;
+				if( event.key.keysym.sym == SDLK_RETURN )
                 {
             	    entered = true;
             	    quit = true;
@@ -283,62 +308,79 @@ static ViewDescriptor main_loop( void )
                 else if( len < 15 )
                 {
                 	code = event.key.keysym.unicode;
-                	if( ( code >= 32 ) && ( code <= 127 ) )
+                	if( ( code >= 32 ) && ( code <= 126 ) )
                 	{
 	                	chin = (char) code;
     	                strin[len] = chin;
         	            len++;
 	                }
                 }
-                strin[len] = '|';
+                strin[len] = '_';
+                inputbox_init( );
+                draw_scoreboard( screen );
+                if ( !entered )
+		        {
+			        if( len < 15 ) alen = len +1;
+			        else alen = len;
+					putstring( strin, 54, 364, alen );
+		        }
+		        draw_scoreboard( screen );
+		        break;
     	    }
-        	if( event.type == SDL_MOUSEMOTION )
+        	case SDL_MOUSEMOTION:
 	    	{
 		    	cursor_x = event.motion.x;
                 cursor_y = event.motion.y;
-                if ( ( cursor_x >= 100 ) && ( cursor_x <= 200 ) && ( cursor_y >= 420 ) && ( cursor_y <= 470 ) )
-                    cursor_over = true;
-		    	else cursor_over = false;
+                if ( ( cursor_x >= 100 + SCOREBOARD_X_BASE ) && ( cursor_x <= 200 + SCOREBOARD_X_BASE ) && ( cursor_y >= 420 + SCOREBOARD_Y_BASE ) && ( cursor_y <= 470 + SCOREBOARD_Y_BASE ) )
+                {
+					cursor_over = true;
+					set_cursor( CURSOR_HAND );
+                }
+		    	else
+				{
+				    cursor_over = false;
+				    set_cursor( CURSOR_NORMAL );
+				}
+				break;
     		}
-	    	if( event.type == SDL_MOUSEBUTTONDOWN )
+	    	case SDL_MOUSEBUTTONDOWN:
             {
-        	    if ( cursor_over )
+        	    if( event.button.button != SDL_BUTTON_LEFT ) break;
+				if ( cursor_over )
     			{
-	    		    button_load( 1 );
+                    scoreboard_initialize( );
+					button_load( 1 );
+					putstring( strin, 54, 364, len );
+					draw_scoreboard( screen );
 			        entered = true;
-			        //inputbox_init( );
     			}
+    			break;
             }
-            if( event.type == SDL_MOUSEBUTTONUP )
+            case SDL_MOUSEBUTTONUP :
 			{
-			    button_load( 0 );
 			    if ( entered )
 				{
-				    inputbox_init( );
-				    quit = true;
+				    scoreboard_initialize( );
+					button_load( 0 );
+					draw_scoreboard( screen );
+					quit = true;
 				}
+				break;
 			}
 			if( event.type == SDL_QUIT )
 			{
 				entered=true;
 				quit = true;
+				break;
 			}
     	}
-    	inputbox_init( );
-        if ( !entered )
-		{
-			timer = SDL_GetTicks( );
-    		if( ( ( timer - start ) % 600 ) < 300 )
-    	        putstring( strin, 54, 364, len + 1 );
-	        else putstring( strin, 54, 364, len );
-		}
-		else
+		if( entered )
 		{
 		    strin[len] = '\0';
-			for( alen = len + 1; alen < 16; alen++ )
-			    strin[alen] = ' ';
+		    for( alen = len + 1; alen < 16; alen++ )
+		        strin[alen] = ' ';
 		}
-		draw_scoreboard( screen );
+		//draw_scoreboard( screen );
 	}
     SDL_EnableUNICODE( SDL_DISABLE );
     save_topscore( strin );
