@@ -22,28 +22,6 @@ void computer_initialize(void)
 			i++;
 		}
     }
-	/*
-	cell[2][3].type = CELL_BARRIER;
-    board_update(2, 3);
-	cell[2][5].type = CELL_BARRIER;
-    board_update(2, 5);
-	cell[1][4].type = CELL_BARRIER;
-    board_update(1, 4);
-	cell[1][3].type = CELL_BARRIER;
-    board_update(1, 3);
-	cell[3][3].type = CELL_BARRIER;
-    board_update(3, 3);
-	cell[3][4].type = CELL_BARRIER;
-    board_update(3, 4);
-	*/
-	/*
-	for(i=1;i<DIRECTION_MAX;i++)
-	{
-		int x=2,y=4;
-		calc_cell_move(&x,&y,i);	
-		printf("%d %d \n",x,y);
-	}
-	*/
 }
 
 /*
@@ -97,13 +75,14 @@ bool can_move(int row, int col, int dir)
     return calc_cell_move( &row, &col, dir ) && cell[row][col].type == CELL_GROUND;
 }
 
-int dis_to_border(int row, int col)
+int dis_to_border( int row, int col, int path[][2] )
 {
     int LENTH = ROWS * COLS;
     int queue[ROWS * COLS][2], l = 0, r = -1,
-        tmp_dis[ROWS * COLS];
+        tmp_dis[ROWS * COLS],
+        father[ROWS][COLS][2];
 
-    bool vis[ROWS][COLS] = {0};
+    bool vis[ROWS][COLS] = {{false,},};
 
 	if(on_border(row, col))
         return 0;
@@ -118,11 +97,10 @@ int dis_to_border(int row, int col)
         int i;
         int now_row = queue[l][0],
             now_col = queue[l][1],
-            next_row,
-            next_col;
-		/*
-		printf("now: %d %d\n",now_row,now_col);
-		*/
+            next_row, next_col,
+            tmp_row, tmp_col,
+            ptr;
+
         for(i = 1; i < DIRECTION_MAX; i++)
         {
             if(can_move(now_row, now_col, i))
@@ -131,13 +109,32 @@ int dis_to_border(int row, int col)
                 next_col = now_col;
 
                 calc_cell_move(&next_row, &next_col, i);
-				/*
-				printf("can move to %d %d %d\n", next_row,next_col,i);
-				*/
+
                 if(vis[next_row][next_col] == 0)
                 {
+                    father[next_row][next_col][0] = now_row;
+                    father[next_row][next_col][1] = now_col;
+
                     if(on_border(next_row, next_col))
+                    {
+                        if(path != NULL)
+                        {
+                            ptr = tmp_dis[l];
+                            while(ptr >= 0)
+                            {
+                                path[ptr][0] = next_row;
+                                path[ptr][1] = next_col;
+
+                                tmp_row = father[next_row][next_col][0];
+                                tmp_col = father[next_row][next_col][1];
+                                next_row = tmp_row;
+                                next_col = tmp_col;
+
+                                ptr--;
+                            }
+                        }
                         return tmp_dis[l] + 1;
+                    }
 
                     r = (r + 1) % LENTH;
 
@@ -181,9 +178,7 @@ Direction decision_normal(int last_row, int last_col)
     int i, row, col, dis,
         dire = -1,
         min_dis = -1;
-	/*
-	printf("now:%d %d\n",cat.row,cat.col);
-	*/
+
     for(i = 1; i < DIRECTION_MAX; i++)
 	{
 		row = cat.row;
@@ -192,11 +187,8 @@ Direction decision_normal(int last_row, int last_col)
 		if(can_move(row, col, i))
 		{
 			calc_cell_move(&row, &col, i);
+		    dis = dis_to_border(row, col, NULL);
 
-		    dis = dis_to_border(row, col);
-			/*
-			printf("row:%d col:%d dis:%d\n",row,col,dis);
-			*/
 		    if(dis != -1 && (dis < min_dis || min_dis == -1))
 		    {
 		        min_dis = dis;
@@ -205,6 +197,59 @@ Direction decision_normal(int last_row, int last_col)
 		}
 	}
 	if(min_dis == -1)
+        return UNABLE_TO_MOVE;
+    else
+        return dire;
+}
+
+Direction decision_hard(int last_row, int last_col)
+{
+    int i, j,
+        row, col, try_row, try_col,
+        dis, dire = -1,
+        min_sum_dis = -1, maxdis = 100,
+        tmp_dis,
+        sum,
+        path[ROWS * COLS][2];
+    bool ok = 0;
+
+    for(i = 1; i < DIRECTION_MAX; i++)
+	{
+		row = cat.row;
+		col = cat.col;
+
+		if(can_move(row, col, i))
+		{
+			calc_cell_move(&row, &col, i);
+		    dis = dis_to_border(row, col, path);
+            sum = 0;
+
+            if(dis != -1)
+            {
+                ok = 1;
+                for(j = 0; j < dis; j++)
+                {
+                    try_row = path[j][0];
+                    try_col = path[j][1];
+
+                    cell[try_row][try_col].type = CELL_BARRIER;
+                    tmp_dis = dis_to_border(row, col, NULL);
+                    cell[try_row][try_col].type = CELL_GROUND;
+
+                    if(tmp_dis == -1)
+                        sum += maxdis;
+                    else
+                        sum += tmp_dis;
+                }
+                if(min_sum_dis == -1 || sum < min_sum_dis)
+                {
+                    dire = i;
+                    min_sum_dis = sum;
+                }
+            }
+		}
+	}
+	if(!ok)
         return UNABLE_TO_MOVE;
     else
         return dire;
@@ -220,5 +265,5 @@ Direction computer_decision(int last_row, int last_col)
     if(go_out_border(cat.row, cat.col, &dir))
         return dir;
 
-	return decision_normal(last_row, last_col);
+	return decision_hard(last_row, last_col);
 }
