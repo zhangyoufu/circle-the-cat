@@ -206,12 +206,14 @@ Direction decision_hard(int last_row, int last_col)
 {
     int i, j,
         row, col, try_row, try_col,
-        dis, dire = -1,
-        min_sum_dis = -1, maxdis = 100,
+        dis, dire = -1, maxdis = 100,
         tmp_dis,
-        sum,
+        sum, die_path,
         path[ROWS * COLS][2];
     bool ok = 0;
+	double sec_path_average,
+		   rank,
+		   min_rank = 10000;
 
     for(i = 1; i < DIRECTION_MAX; i++)
 	{
@@ -227,6 +229,7 @@ Direction decision_hard(int last_row, int last_col)
             if(dis != -1)
             {
                 ok = 1;
+				die_path = 0;
                 for(j = 0; j < dis; j++)
                 {
                     try_row = path[j][0];
@@ -237,16 +240,29 @@ Direction decision_hard(int last_row, int last_col)
                     cell[try_row][try_col].type = CELL_GROUND;
 
                     if(tmp_dis == -1)
-                        sum += maxdis;
+                        die_path++;
                     else
                         sum += tmp_dis;
                 }
-                if(min_sum_dis == -1 || sum < min_sum_dis)
+				if(dis == 0)
+					rank = 0;
+				else
+				{
+					if(dis == die_path)
+						sec_path_average = dis + 7.5;
+					else
+						sec_path_average = (double)sum / (double)(dis-die_path);
+					rank = sec_path_average * 1.15 + die_path + dis * 0.6;
+				}
+				//printf("rank of %d, %d = %lf\n",row,col,rank);
+				//printf("sum = %d, dis = %d\n",sum,dis);
+                if(rank < min_rank)
                 {
                     dire = i;
-                    min_sum_dis = sum;
+                    min_rank = rank;
                 }
             }
+			//printf("\n");
 		}
 	}
 	if(!ok)
