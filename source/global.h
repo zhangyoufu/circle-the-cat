@@ -38,6 +38,7 @@ extern "C" {
 
 /* Enumeration */
 enum {
+	QUIT,
 	GAME_VIEW,
 	TOP_SCORE_VIEW,
 	VIEW_MAX,
@@ -116,8 +117,9 @@ extern Cat cat;
 /******************************************************************************/
 
 /* Board */
+extern int difficulty;
 void apply_board( SDL_Surface *surface );
-void board_update( int row, int col );
+void board_update_cell( int row, int col );
 void draw_all( SDL_Surface *surface, int frame );
 void calc_cell_position( int row, int col, int *x, int *y );
 bool find_cell( int x, int y, int *row, int *col );
@@ -137,19 +139,22 @@ void cat_initialize( void );
 /* Computer */
 void computer_initialize( void );
 Direction computer_decision( int last_row, int last_col );
+int dis_to_border( int row, int col, int path[][2] );
 
 /* View */
-void view_init( void );
+void view_initialize( void );
 int show_view( ViewDescriptor desc );
 
 /*******************************************************************************
  * Cursor
  ******************************************************************************/
 typedef enum {
-	CURSOR_NORMAL,
+	CURSOR_ARROW,
 	CURSOR_HAND,
 } Cursor;
 
+void cursor_initialize( void );
+void cursor_finalize( void );
 void set_cursor( Cursor cursor );
 
 /******************************************************************************/

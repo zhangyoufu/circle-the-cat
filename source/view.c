@@ -1,6 +1,7 @@
 #include "global.h"
 
 View* view_repo[VIEW_MAX] = {
+	NULL, /* quit */
 	&game_view,
 	&top_score_view,
 };
@@ -40,16 +41,19 @@ int show_view( ViewDescriptor desc )
 	return view->main_loop( );
 }
 
-void view_init( void )
+void view_initialize( void )
 {
 	int i;
 	
 	for( i = 0; i < VIEW_MAX; i++ )
 	{
-		if( view_repo[i]->load )
-			view_repo[i]->load( );
-		
-		if( view_repo[i]->unload )
-			atexit( view_repo[i]->unload );
+		if( view_repo[i] )
+		{
+			if( view_repo[i]->load )
+				view_repo[i]->load( );
+			
+			if( view_repo[i]->unload )
+				atexit( view_repo[i]->unload );
+		}
 	}
 }

@@ -13,7 +13,7 @@ static void check_and_set_cursor( int x, int y )
 	if( check_clickable( x, y ) )
 		set_cursor( CURSOR_HAND );
 	else
-		set_cursor( CURSOR_NORMAL );
+		set_cursor( CURSOR_ARROW );
 }
 
 /* Redraw all items */
@@ -52,7 +52,7 @@ static void finalize( void )
 	board_finalize( );
 }
 
-#define GAME_OVER_CAT_STILL_DELAY		2500
+#define GAME_OVER_CAT_STILL_DELAY		2300
 #define GAME_OVER_CAT_WIN_DELAY			1500
 
 /* Event loop */
@@ -65,7 +65,7 @@ static ViewDescriptor main_loop( void )
 	bool start = false;
 	
 	if( SDL_GetMouseState( &x, &y ) & SDL_BUTTON_LEFT )
-		set_cursor( CURSOR_NORMAL );
+		set_cursor( CURSOR_ARROW );
 	else
 		check_and_set_cursor( x, y );
 	
@@ -78,14 +78,17 @@ static ViewDescriptor main_loop( void )
 		switch( event.type )
 		{
 			case SDL_MOUSEMOTION:
+			{
 				/* Prohibit mouse event until left button is up */
 				if( event.motion.state & SDL_BUTTON_LEFT )
 					break;
 	
 				check_and_set_cursor( event.motion.x, event.motion.y );
 				break;
+			}
 			
 			case SDL_MOUSEBUTTONDOWN:
+			{
 				/* Left button only */
 				if( event.button.button != SDL_BUTTON_LEFT )
 					break;
@@ -114,7 +117,7 @@ static ViewDescriptor main_loop( void )
 						
 						/* Set the cell to barrier */
 						cell[row][col].type = CELL_BARRIER;
-						board_update( row, col );
+						board_update_cell( row, col );
 
 						direction = computer_decision( row, col );
 						if( direction == UNABLE_TO_MOVE )
@@ -129,21 +132,21 @@ static ViewDescriptor main_loop( void )
 						else /* direction != UNABLE_TO_MOVE */
 						{
 							cat.direction = direction;
-							if( cat_move(  ) )
+							if( cat_move( ) )
 							{
 								draw_all( screen, 0 ); /* sit there */
 							}
 							else
 							{
 								while( cat_in_screen( ) )
-									cat_move(  );
+									cat_move( );
 								delay( GAME_OVER_CAT_WIN_DELAY );
 								cat_win = true;
 								game_over = true;
 							}
 						}
 						
-						set_cursor( CURSOR_NORMAL );
+						set_cursor( CURSOR_ARROW );
 					}
 					else /* cell[row][col].state == CELL_BARRIER */
 					{
@@ -151,6 +154,7 @@ static ViewDescriptor main_loop( void )
 					}
 				}
 				break;
+			}
 		}
 	}
 	
