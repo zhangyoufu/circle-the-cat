@@ -3,31 +3,7 @@
 #include <time.h>
 #include <stdio.h>
 
-/*
-    Initialize the ground
-*/
-void computer_initialize(void)
-{
-    int i = 0;
-
-    while(i < 10)
-    {
-        int x = rand() % ROWS,
-            y = rand() % COLS;
-
-		if(!(x == 5 && y == 5))
-		{
-			cell[x][y].type = CELL_BARRIER;
-			if(computer_decision(5, 5) != UNABLE_TO_MOVE)
-			{
-				board_update(x, y);
-				i++;
-			}
-			else
-				cell[x][y].type = CELL_GROUND;
-		}
-    }
-}
+Direction (*decision_ptr) (int last_row, int last_col);
 
 /*
     Check if cat is on the border.
@@ -175,7 +151,7 @@ Direction decision_easy(int last_row, int last_col)
 			possible_move[ possible_move_count++ ] = i;
 	}
 
-	if( possible_move_count == 0 )
+	if( dis_to_border(cat.row, cat.col, NULL) == -1 )
 		return UNABLE_TO_MOVE;
 
 	return possible_move[ rand( ) % possible_move_count ];
@@ -186,10 +162,10 @@ Direction decision_normal(int last_row, int last_col)
     int i, row, col, dis,
         dire = -1,
         min_dis = -1;
-	
+
 	UNUSED( last_row );
 	UNUSED( last_col );
-    
+
 	for(i = 1; i < DIRECTION_MAX; i++)
 	{
 		row = cat.row;
@@ -271,7 +247,7 @@ Direction decision_hard(int last_row, int last_col)
                     else
                     {
                         sec_path_average = (double)sum / (double)(dis-die_path);
-                    }	
+                    }
 				    if(die_path)
 				    {
 				        rank = 1000 + dis;
@@ -310,5 +286,42 @@ Direction computer_decision(int last_row, int last_col)
     if(go_out_border(cat.row, cat.col, &dir))
         return dir;
 
-	return decision_hard(last_row, last_col);
+	return (*decision_ptr)(last_row, last_col);
+}
+
+/*
+    Initialize the ground
+*/
+void computer_initialize(void)
+{
+    int i = 0,
+        level;
+	
+	srand(time(NULL));
+	level = rand() % 11 + 1;
+
+    while(i < level)
+    {
+        int x = rand() % ROWS,
+            y = rand() % COLS;
+
+		if(!(x == 5 && y == 5))
+		{
+			cell[x][y].type = CELL_BARRIER;
+			if(dis_to_border(5, 5, NULL) != -1)
+			{
+				board_update(x, y);
+				i++;
+			}
+			else
+				cell[x][y].type = CELL_GROUND;
+		}
+    }
+
+    if(level <= 3)
+        decision_ptr = decision_easy;
+    else if(level <= 7)
+        decision_ptr = decision_normal;
+    else
+        decision_ptr = decision_hard;
 }
