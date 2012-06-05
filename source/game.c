@@ -105,7 +105,7 @@ static ViewDescriptor main_loop( void )
 						
 						/* Set the cell to barrier */
 						cell[row][col].type = CELL_BARRIER;
-						board_update( row, col );
+						board_update_cell( row, col );
 
 						direction = computer_decision( row, col );
 						if( direction == UNABLE_TO_MOVE )
@@ -120,14 +120,14 @@ static ViewDescriptor main_loop( void )
 						else /* direction != UNABLE_TO_MOVE */
 						{
 							cat.direction = direction;
-							if( cat_move(  ) )
+							if( cat_move( ) )
 							{
 								draw_all( screen, 0 ); /* sit there */
 							}
 							else
 							{
 								while( cat_in_screen( ) )
-									cat_move(  );
+									cat_move( );
 								delay( GAME_OVER_CAT_WIN_DELAY );
 								cat_win = true;
 								game_over = true;

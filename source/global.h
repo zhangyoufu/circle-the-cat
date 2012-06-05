@@ -117,8 +117,9 @@ extern Cat cat;
 /******************************************************************************/
 
 /* Board */
+extern int difficulty;
 void apply_board( SDL_Surface *surface );
-void board_update( int row, int col );
+void board_update_cell( int row, int col );
 void draw_all( SDL_Surface *surface, int frame );
 void calc_cell_position( int row, int col, int *x, int *y );
 bool find_cell( int x, int y, int *row, int *col );
@@ -138,6 +139,7 @@ void cat_initialize( void );
 /* Computer */
 void computer_initialize( void );
 Direction computer_decision( int last_row, int last_col );
+int dis_to_border( int row, int col, int path[][2] );
 
 /* View */
 void view_initialize( void );

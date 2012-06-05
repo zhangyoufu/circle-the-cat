@@ -51,8 +51,8 @@ void apply_board( SDL_Surface *surface )
 	SDL_BlitSurface( board, NULL, surface, &board_base );
 }
 
-/* Update the board surface */
-void board_update( int row, int col )
+/* Update specified cell on board surface */
+void board_update_cell( int row, int col )
 {
 	SDL_Rect position;
 	int x, y;
@@ -62,7 +62,7 @@ void board_update( int row, int col )
 	position.x = x;
 	position.y = y;
 	position.w = position.h = 0;
-	SDL_BlitSurface( cell_tile[ CELL_BARRIER ],
+	SDL_BlitSurface( cell_tile[ cell[row][col].type ],
 	                 0,
 	                 board,
 	                 &position );
@@ -221,6 +221,27 @@ bool find_cell( int x, int y, int *row, int *col )
 	return result;
 }
 
+void generate_board( void )
+{
+    int i = 0;
+	
+	memset( cell, 0, sizeof cell );
+
+	difficulty = rand() % 11 + 1;
+    while( i < difficulty )
+    {
+        int x = rand() % ROWS,
+            y = rand() % COLS;
+
+		if( (x != 5 || y != 5) && dis_to_border(5, 5, NULL) >= 0 )
+		{
+			cell[x][y].type = CELL_BARRIER;
+			i++;
+		}
+    }
+
+}
+
 /*******************************************************************************
  * Interface
  ******************************************************************************/
@@ -233,9 +254,12 @@ void board_load( void )
 	generate_offset_pattern( );
 }
 
+int difficulty;
+
 /* Initialize */
 void board_initialize( void )
 {
+	generate_board( );
 	board = create_surface( BOARD_WIDTH, BOARD_HEIGHT, 32, SDL_HWSURFACE );
 	draw_board( );
 }

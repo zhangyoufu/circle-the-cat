@@ -294,33 +294,9 @@ Direction computer_decision(int last_row, int last_col)
 */
 void computer_initialize(void)
 {
-    int i = 0,
-        level;
-	
-	srand(time(NULL));
-	level = rand() % 11 + 1;
-
-    while(i < level)
-    {
-        int x = rand() % ROWS,
-            y = rand() % COLS;
-
-		if(!(x == 5 && y == 5))
-		{
-			cell[x][y].type = CELL_BARRIER;
-			if(dis_to_border(5, 5, NULL) != -1)
-			{
-				board_update(x, y);
-				i++;
-			}
-			else
-				cell[x][y].type = CELL_GROUND;
-		}
-    }
-
-    if(level <= 3)
+    if( difficulty <= 3 )
         decision_ptr = decision_easy;
-    else if(level <= 7)
+    else if( difficulty <= 7 )
         decision_ptr = decision_normal;
     else
         decision_ptr = decision_hard;
