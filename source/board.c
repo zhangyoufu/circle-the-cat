@@ -227,7 +227,7 @@ void generate_board( void )
 	
 	memset( cell, 0, sizeof cell );
 
-	difficulty = rand() % 11 + 1;
+	difficulty = rand() % 8 + 5;
     while( i < difficulty )
     {
         int x = rand() % ROWS,

@@ -36,6 +36,9 @@ Thumbs.db
 Debug/
 Release/
 
+# Savedata
+*.sav
+
 # Manual backup files
 *.bak
 

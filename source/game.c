@@ -61,7 +61,8 @@ static ViewDescriptor main_loop( void )
 	bool game_over = false, cat_win = false;
 	int x, y;
 	int steps = 0;
-	Uint32 starter, timer;
+	Uint32 starter = 0, timer;
+	/* initialize starter to avoid uninitialized warning */
 	bool start = false;
 	
 	if( SDL_GetMouseState( &x, &y ) & SDL_BUTTON_LEFT )

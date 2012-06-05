@@ -294,7 +294,7 @@ Direction computer_decision(int last_row, int last_col)
 */
 void computer_initialize(void)
 {
-    if( difficulty <= 3 )
+    if( difficulty <= 4 )
         decision_ptr = decision_easy;
     else if( difficulty <= 7 )
         decision_ptr = decision_normal;

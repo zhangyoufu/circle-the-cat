@@ -124,8 +124,15 @@ static void button_load( int state )
 {
 	SDL_Rect position = { 100, 420, 0, 0 };
 	SDL_Surface* button;
-	if ( state == 0 ) button = load_resource_for_RGBA( "button0.gif" );
-	if ( state == 1 ) button = load_resource_for_RGBA( "button1.gif" );
+
+	if ( state == 0 )
+	{
+		button = load_resource_for_RGBA( "button0.gif" );
+	}
+	else
+	{
+		button = load_resource_for_RGBA( "button1.gif" );
+	}
 	SDL_BlitSurface( button,
 			         NULL,
 			         scoreboard,
@@ -285,7 +292,7 @@ static ViewDescriptor main_loop( void )
 	len = 0;
 	/*deal with keyboard and mouse*/
 	SDL_EnableUNICODE( SDL_ENABLE );
-	set_cursor( CURSOR_NORMAL );
+	set_cursor( CURSOR_ARROW );
     putstring( "_", 54, 364, 1 );
     draw_scoreboard( screen );
 	while( !quit )
@@ -339,7 +346,7 @@ static ViewDescriptor main_loop( void )
 		    	else
 				{
 				    cursor_over = false;
-				    set_cursor( CURSOR_NORMAL );
+				    set_cursor( CURSOR_ARROW );
 				}
 				break;
     		}
@@ -385,7 +392,7 @@ static ViewDescriptor main_loop( void )
     SDL_EnableUNICODE( SDL_DISABLE );
     save_topscore( strin );
 	delay(1000);//waiting
-	return VIEW_DESCRIPTOR( GAME_VIEW, NO_EFFECT );
+	return VIEW_DESCRIPTOR( GAME_VIEW, FADE_EFFECT );
 }
 
 View top_score_view = { load, initialize, main_loop, finalize, unload };
