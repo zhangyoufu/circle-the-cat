@@ -18,8 +18,13 @@ void computer_initialize(void)
 		if(!(x == 5 && y == 5))
 		{
 			cell[x][y].type = CELL_BARRIER;
-			board_update(x, y);
-			i++;
+			if(computer_decision(5, 5) != UNABLE_TO_MOVE)
+			{
+				board_update(x, y);
+				i++;
+			}
+			else
+				cell[x][y].type = CELL_GROUND;
 		}
     }
 }
@@ -157,6 +162,9 @@ Direction decision_easy(int last_row, int last_col)
     int possible_move[DIRECTION_MAX], possible_move_count;
     int i, row, col;
 
+	UNUSED( last_row );
+	UNUSED( last_col );
+
     possible_move_count = 0;
 	for(i = 1; i < DIRECTION_MAX; i++)
 	{
@@ -178,8 +186,11 @@ Direction decision_normal(int last_row, int last_col)
     int i, row, col, dis,
         dire = -1,
         min_dis = -1;
-
-    for(i = 1; i < DIRECTION_MAX; i++)
+	
+	UNUSED( last_row );
+	UNUSED( last_col );
+    
+	for(i = 1; i < DIRECTION_MAX; i++)
 	{
 		row = cat.row;
 		col = cat.col;
@@ -213,7 +224,10 @@ Direction decision_hard(int last_row, int last_col)
     bool ok = 0;
 	double sec_path_average,
 		   rank,
-		   min_rank = 10000;
+		   min_rank = 100000;
+
+	UNUSED( last_row );
+	UNUSED( last_col );
 
     for(i = 1; i < DIRECTION_MAX; i++)
 	{
@@ -235,6 +249,8 @@ Direction decision_hard(int last_row, int last_col)
                     try_row = path[j][0];
                     try_col = path[j][1];
 
+					//printf("%d %d\n",try_row,try_col);
+
                     cell[try_row][try_col].type = CELL_BARRIER;
                     tmp_dis = dis_to_border(row, col, NULL);
                     cell[try_row][try_col].type = CELL_GROUND;
@@ -248,14 +264,27 @@ Direction decision_hard(int last_row, int last_col)
 					rank = 0;
 				else
 				{
-					if(dis == die_path)
-						sec_path_average = dis + 7.5;
-					else
-						sec_path_average = (double)sum / (double)(dis-die_path);
-					rank = sec_path_average * 1.15 + die_path + dis * 0.6;
+				    if(dis == die_path)
+				    {
+				        sec_path_average = maxdis;
+				    }
+                    else
+                    {
+                        sec_path_average = (double)sum / (double)(dis-die_path);
+                    }	
+				    if(die_path)
+				    {
+				        rank = 1000 + dis;
+						//rank = 1000 + sec_path_average * 0.4 + dis-die_path;
+				    }
+                    else
+                    {
+						//rank = (double)(sum+dis) / (double)(dis+1);
+                        rank = sec_path_average * 4 + dis * 0.5;
+                    }
 				}
 				//printf("rank of %d, %d = %lf\n",row,col,rank);
-				//printf("sum = %d, dis = %d\n",sum,dis);
+				//printf("sec_path_average = %lf, diepath = %d, dis = %d\n",sec_path_average,die_path,dis);
                 if(rank < min_rank)
                 {
                     dire = i;
