@@ -38,6 +38,7 @@ extern "C" {
 
 /* Enumeration */
 enum {
+	QUIT,
 	GAME_VIEW,
 	TOP_SCORE_VIEW,
 	VIEW_MAX,
@@ -139,17 +140,19 @@ void computer_initialize( void );
 Direction computer_decision( int last_row, int last_col );
 
 /* View */
-void view_init( void );
+void view_initialize( void );
 int show_view( ViewDescriptor desc );
 
 /*******************************************************************************
  * Cursor
  ******************************************************************************/
 typedef enum {
-	CURSOR_NORMAL,
+	CURSOR_ARROW,
 	CURSOR_HAND,
 } Cursor;
 
+void cursor_initialize( void );
+void cursor_finalize( void );
 void set_cursor( Cursor cursor );
 
 /******************************************************************************/

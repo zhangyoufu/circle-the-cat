@@ -53,7 +53,9 @@ int main( int argc, char* argv[] )
 	
 	SDL_SetEventFilter( event_filter );
 	
-	view_init( );
+	view_initialize( );
+	cursor_initialize( );
+	set_cursor( CURSOR_ARROW );
 	
 	/* TODO: Try SDL_NOFRAME flag */
 	screen = SDL_SetVideoMode( SCREEN_WIDTH,
@@ -63,8 +65,9 @@ int main( int argc, char* argv[] )
 	                           SDL_HWSURFACE | SDL_DOUBLEBUF );
 	
 	next_view = VIEW_DESCRIPTOR( INITIAL_VIEW, FADE_EFFECT );
-	while( true )
+	while( next_view )
 		next_view = show_view( next_view );
 	
+	// cursor_finalize( );
 	return 0;
 }

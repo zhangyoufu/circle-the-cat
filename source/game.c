@@ -13,7 +13,7 @@ static void check_and_set_cursor( int x, int y )
 	if( check_clickable( x, y ) )
 		set_cursor( CURSOR_HAND );
 	else
-		set_cursor( CURSOR_NORMAL );
+		set_cursor( CURSOR_ARROW );
 }
 
 /* Redraw all items */
@@ -52,7 +52,7 @@ static void finalize( void )
 	board_finalize( );
 }
 
-#define GAME_OVER_CAT_STILL_DELAY		2500
+#define GAME_OVER_CAT_STILL_DELAY		2300
 #define GAME_OVER_CAT_WIN_DELAY			1500
 
 /* Event loop */
@@ -62,7 +62,7 @@ static ViewDescriptor main_loop( void )
 	int x, y;
 	
 	if( SDL_GetMouseState( &x, &y ) & SDL_BUTTON_LEFT )
-		set_cursor( CURSOR_NORMAL );
+		set_cursor( CURSOR_ARROW );
 	else
 		check_and_set_cursor( x, y );
 	
@@ -75,14 +75,17 @@ static ViewDescriptor main_loop( void )
 		switch( event.type )
 		{
 			case SDL_MOUSEMOTION:
+			{
 				/* Prohibit mouse event until left button is up */
 				if( event.motion.state & SDL_BUTTON_LEFT )
 					break;
 	
 				check_and_set_cursor( event.motion.x, event.motion.y );
 				break;
+			}
 			
 			case SDL_MOUSEBUTTONDOWN:
+			{
 				/* Left button only */
 				if( event.button.button != SDL_BUTTON_LEFT )
 					break;
@@ -131,7 +134,7 @@ static ViewDescriptor main_loop( void )
 							}
 						}
 						
-						set_cursor( CURSOR_NORMAL );
+						set_cursor( CURSOR_ARROW );
 					}
 					else /* cell[row][col].state == CELL_BARRIER */
 					{
@@ -139,6 +142,7 @@ static ViewDescriptor main_loop( void )
 					}
 				}
 				break;
+			}
 		}
 	}
 	
